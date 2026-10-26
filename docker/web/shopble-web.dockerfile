@@ -6,6 +6,10 @@
 # package-lock.json (lockfileVersion 3) needs — npm 10 rejects it as out of sync.
 FROM node:26.12.1-alpine AS builder
 
+# Node exists only in this stage, so the nginx runtime cannot be asked what built the
+# bundle. Record it here and carry it over — see the COPY in the runtime stage.
+RUN node -v > /node-version
+
 WORKDIR /src
 
 # Lockfile before source: this layer only rebuilds when dependencies change.
@@ -33,5 +37,10 @@ FROM nginx:alpine
 
 COPY docker/web/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /src/dist /usr/share/nginx/html
+
+# Deliberately NOT under /usr/share/nginx/html: the build toolchain version is an
+# operational detail, not something to serve to every visitor.
+#   docker exec shopble_web cat /etc/shopble-build-node
+COPY --from=builder /node-version /etc/shopble-build-node
 
 EXPOSE 80

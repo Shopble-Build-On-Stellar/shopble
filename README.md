@@ -168,6 +168,17 @@ docker service logs -f shopble_api
 Expect `watcher: stream="payments" dest=GDE7… interval=3s`. If that line is absent, the command
 override did not take and nothing is watching the ledger.
 
+Which Node built the frontend bundle:
+
+```bash
+docker exec shopble_web cat /etc/shopble-build-node
+```
+
+The web runtime is `nginx:alpine` — node lives only in the builder stage and is discarded,
+so `node -v` inside the container returns `not found`. The dockerfile records the version at
+build time instead. If it disagrees with the pin in `docker/web/shopble-web.dockerfile`, the
+deployed image is stale: rebuild, push, and deploy again.
+
 ### On-chain entries expire after ~7 days
 
 Soroban charges for storage by time. The contract does not call `extend_ttl`, so every

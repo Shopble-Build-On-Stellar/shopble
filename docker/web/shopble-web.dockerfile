@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1
 
 # ---------- builder ----------
-# node 24 for npm 11: the committed package-lock.json is lockfileVersion 3 written by
-# npm 11, and npm 10 (what node:22-alpine ships) rejects it as out of sync. Vite 8 also
-# requires node >=22.12.0.
-FROM node:24-alpine AS builder
+# Pinned to an exact patch, not a floating major: the build must be reproducible and the
+# version is what carries the security fixes. node 26 ships npm 11, which the committed
+# package-lock.json (lockfileVersion 3) needs — npm 10 rejects it as out of sync.
+FROM node:26.12.1-alpine AS builder
 
 WORKDIR /src
 
